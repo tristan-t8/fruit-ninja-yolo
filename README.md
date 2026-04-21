@@ -4,7 +4,7 @@ A fun and interactive **Fruit Cutting Game** built using Flutter.
 
 Show some ❤️ by starring ⭐ this repository if you like it!
 
-###### Contact for work, email: chunhthanhde.dev@gmail.com
+###### Contact for work, email: tristan@spam.zoaken.com
 
 ## 🌟 Features
 
@@ -34,19 +34,3 @@ Show some ❤️ by starring ⭐ this repository if you like it!
 ## 🌟 Conclusion
 
 With its engaging fruit-cutting mechanics, **Flutter Fruit Cutting Game** is a perfect way to kill time and have fun! Enjoy the challenge of swiping through fruits and leveling up as you master the game.
-
-## Star History
-
-<a href="https://star-history.com/#Flutter-Journey/Fruit-Cutting-Game&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Flutter-Journey/Fruit-Cutting-Game&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Flutter-Journey/Fruit-Cutting-Game&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Flutter-Journey/Fruit-Cutting-Game&type=Date" />
- </picture>
-</a>
-
-<div align="center">
-
-#### Made by Flutter <img src="https://raw.githubusercontent.com/Flutter-Journey/Fruit-Cutting-Game/refs/heads/main/assets/icons/flutter_icon.png" height="15"> with Love ❤️ | Developed by [ChunhThanhDe](https://github.com/chunhthanhde)
-
-</div>
