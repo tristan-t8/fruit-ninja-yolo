@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  fruit-ninja-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fruit-ninja-yolo
+    ports:
+      - "5000:5000"
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - PYTHONUNBUFFERED=1
+      - FLASK_ENV=production
+      - FLASK_APP=app.py
+    volumes:
+      - ./logs:/app/logs
+      - ./models:/app/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - fruit-ninja-net
+
+networks:
+  fruit-ninja-net:
+    driver: bridge
