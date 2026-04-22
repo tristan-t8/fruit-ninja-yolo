@@ -6,11 +6,12 @@
     "max_content_length": 52428800
   },
   "hand_detector": {
-    "model_name": "YOLOv8n Pose",
+    "model_name": "YOLOv8n Pose", 
     "model_path": "yolov8n-pose.pt",
-    "confidence_threshold": 0.5,
+    "confidence_threshold": 0.6,
     "img_size": 640,
-    "device": "cuda"
+    "device": "cuda",
+    "_comment": "model_name and model_path are unused if using hand_detector_rm.py"
   },
   "fruit_slicer": {
     "motion_threshold": 20.0,

@@ -147,57 +147,12 @@ GAME_PAGE_HTML = """
             margin: 10px 0;
         }
         #final-score { font-size: 64px; color: #ffd700; margin: 20px 0; }
-        #mute-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 5;
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid #ffd700;
-            border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-            margin: 0;
-            pointer-events: auto;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-        }
-        #mute-btn:hover { transform: scale(1.1); }
-        #difficulty-indicator {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid #ff6b35;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-size: 14px;
-            color: #ffd700;
-            z-index: 5;
-            text-shadow: 1px 1px 2px black;
-        }
     </style>
 </head>
 <body>
     <div id="game-container">
         <video id="video" autoplay muted playsinline></video>
         <canvas id="game-canvas"></canvas>
-
-        <!-- Background music -->
-        <audio id="bg-music" loop preload="auto">
-            <source src="/static/music.mp3" type="audio/mpeg">
-        </audio>
-
-        <!-- Mute button -->
-        <button id="mute-btn" title="Toggle music (M)">🔊</button>
-
-        <!-- Difficulty indicator -->
-        <div id="difficulty-indicator">
-            Difficulty: <span id="difficulty-name">Normal</span>
-            <span style="opacity:0.7; margin-left:8px;">(press 1-4)</span>
-        </div>
 
         <div id="ui-overlay">
             <div id="hud">
@@ -237,27 +192,8 @@ GAME_PAGE_HTML = """
         // ============================================================
         const SERVER_URL = window.location.origin;
         const DETECT_INTERVAL = 150; // ms between detections
-
-        // ---- DIFFICULTY PRESETS ---------------------------------------
-        // Edit these numbers to tune the game. Or just press 1/2/3/4 in-game.
-        //
-        //   spawnInterval : ms between fruit waves.   LOWER = more fruit.
-        //   launchSpeed   : initial upward speed.     HIGHER = fruit flies higher.
-        //   launchJitter  : random extra speed on top of launchSpeed.
-        //   gravity       : how fast fruit falls.     HIGHER = faster fall / shorter airtime.
-        //   horizontalV   : horizontal drift range.   HIGHER = more chaotic sideways motion.
-        //   bombChance    : 0..1 probability of bomb instead of fruit.
-        //   multiChance   : probability a wave spawns TWO fruits at once.
-        // --------------------------------------------------------------
-        const DIFFICULTY_PRESETS = {
-            easy:   { name: 'Easy',   spawnInterval: 3000, launchSpeed: 4, launchJitter: 5, gravity: 0.02, horizontalV: 5, bombChance: 0.10, multiChance: 0.2 },
-            normal: { name: 'Normal', spawnInterval: 1200, launchSpeed: 15, launchJitter: 8, gravity: 0.40, horizontalV: 6, bombChance: 0.15, multiChance: 0.3 },
-            hard:   { name: 'Hard',   spawnInterval: 850,  launchSpeed: 17, launchJitter: 9, gravity: 0.50, horizontalV: 7, bombChance: 0.18, multiChance: 0.5 },
-            insane: { name: 'Insane', spawnInterval: 550,  launchSpeed: 19, launchJitter: 10, gravity: 0.62, horizontalV: 8, bombChance: 0.22, multiChance: 0.7 },
-        };
-
-        // Pick which preset to start with. Change this to 'easy' / 'hard' / 'insane' if you want.
-        let currentDifficulty = DIFFICULTY_PRESETS.normal;
+        const FRUIT_SPAWN_INTERVAL = 1200; // ms between fruit spawns
+        const BOMB_CHANCE = 0.15;
 
         // ============================================================
         // GAME STATE
@@ -320,13 +256,13 @@ GAME_PAGE_HTML = """
                 this.type = isBomb ? BOMB : FRUIT_TYPES[Math.floor(Math.random() * FRUIT_TYPES.length)];
                 this.x = Math.random() * (canvas.width - 100) + 50;
                 this.y = canvas.height + 50;
-                this.vx = (Math.random() - 0.5) * currentDifficulty.horizontalV;
-                this.vy = -(currentDifficulty.launchSpeed + Math.random() * currentDifficulty.launchJitter);
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = -(15 + Math.random() * 8);
                 this.size = 70 + Math.random() * 20;
                 this.rotation = 0;
                 this.rotationSpeed = (Math.random() - 0.5) * 0.15;
                 this.sliced = false;
-                this.gravity = currentDifficulty.gravity;
+                this.gravity = 0.4;
             }
 
             update() {
@@ -485,7 +421,7 @@ GAME_PAGE_HTML = """
         // GAME LOGIC
         // ============================================================
         function spawnFruit() {
-            const isBomb = Math.random() < currentDifficulty.bombChance;
+            const isBomb = Math.random() < BOMB_CHANCE;
             game.fruits.push(new Fruit(isBomb));
         }
 
@@ -616,9 +552,9 @@ GAME_PAGE_HTML = """
 
             // Spawn fruits
             const now = Date.now();
-            if (now - game.lastSpawn > currentDifficulty.spawnInterval) {
-                // Spawn 1-2 fruits at once depending on difficulty
-                const count = Math.random() < currentDifficulty.multiChance ? 2 : 1;
+            if (now - game.lastSpawn > FRUIT_SPAWN_INTERVAL) {
+                // Spawn 1-3 fruits at once for variety
+                const count = Math.random() < 0.3 ? 2 : 1;
                 for (let i = 0; i < count; i++) {
                     setTimeout(() => spawnFruit(), i * 150);
                 }
@@ -704,9 +640,6 @@ GAME_PAGE_HTML = """
                 document.getElementById('start-screen').style.display = 'none';
                 document.getElementById('game-over').style.display = 'none';
 
-                // Start background music (must be triggered by user gesture — this click counts)
-                playMusic();
-
                 // Start game loop
                 gameLoop();
             } catch (e) {
@@ -730,63 +663,6 @@ GAME_PAGE_HTML = """
 
             document.getElementById('game-over').style.display = 'flex';
         }
-
-        // ============================================================
-        // MUSIC
-        // ============================================================
-        const bgMusic = document.getElementById('bg-music');
-        const muteBtn = document.getElementById('mute-btn');
-        bgMusic.volume = 0.4; // tweak 0..1 to taste
-
-        // Remember mute preference between sessions
-        let isMuted = localStorage.getItem('fruitNinjaMuted') === 'true';
-        updateMuteIcon();
-
-        function playMusic() {
-            if (isMuted) return;
-            // play() returns a promise that rejects if autoplay is blocked.
-            // Since this is called from startGame() (which is triggered by a
-            // button click), the browser should allow it.
-            bgMusic.play().catch(err => {
-                console.warn('Music autoplay blocked:', err);
-            });
-        }
-
-        function toggleMute() {
-            isMuted = !isMuted;
-            localStorage.setItem('fruitNinjaMuted', isMuted);
-            bgMusic.muted = isMuted;
-            // If we're unmuting mid-game and music isn't playing yet, start it.
-            if (!isMuted && game.running && bgMusic.paused) {
-                bgMusic.play().catch(() => {});
-            }
-            updateMuteIcon();
-        }
-
-        function updateMuteIcon() {
-            bgMusic.muted = isMuted;
-            muteBtn.textContent = isMuted ? '🔇' : '🔊';
-        }
-
-        muteBtn.onclick = toggleMute;
-
-        // ============================================================
-        // DIFFICULTY HOTKEYS (1 = Easy, 2 = Normal, 3 = Hard, 4 = Insane)
-        // ============================================================
-        function setDifficulty(key) {
-            if (!DIFFICULTY_PRESETS[key]) return;
-            currentDifficulty = DIFFICULTY_PRESETS[key];
-            document.getElementById('difficulty-name').textContent = currentDifficulty.name;
-            console.log('Difficulty set to', currentDifficulty.name, currentDifficulty);
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === '1') setDifficulty('easy');
-            else if (e.key === '2') setDifficulty('normal');
-            else if (e.key === '3') setDifficulty('hard');
-            else if (e.key === '4') setDifficulty('insane');
-            else if (e.key.toLowerCase() === 'm') toggleMute();
-        });
 
         // ============================================================
         // EVENT LISTENERS
